@@ -8,16 +8,16 @@ ProjectMind AI is an AI-powered platform for final-year students. It turns skill
 - Recommend technologies, features, roadmaps, and advanced improvements
 - Student signup/login with hashed passwords
 - Student profile with skills and interests
-- Account-based saved projects
-- Compare saved projects
+- Account-based saved projects and comparison
 - AI Project Mentor with personalized context and fallback guidance
 - Project Workspace for architecture, modules, database, APIs, datasets, roadmap, testing, documentation, viva questions, and future scope
-- AI Documentation Generator for full reports, abstracts, SRS, methodology, modules, testing, and conclusion/future scope
+- AI Documentation Generator for reports, abstracts, SRS, methodology, modules, testing, and conclusion/future scope
 - Viva & Interview Preparation with Study Mode and Mock Viva Mode
 - Difficulty-based viva practice with 5, 10, or 15 questions
 - AI evaluation of mock-viva answers with score, strengths, missing points, ideal answer, and improvement tip
 - Print generated documentation or save it as PDF from the browser
 - SQLite database with no separate database server
+- Production-ready single-service deployment configuration for Render
 - Health endpoint for API status
 
 ## Project Structure
@@ -36,11 +36,14 @@ ProjectMind-AI/
 │   ├── mentor.py
 │   ├── requirements.txt
 │   └── .env.example
+├── render.yaml
 ├── .gitignore
 └── README.md
 ```
 
-## Run the Backend
+## Run Locally
+
+### Backend
 
 ```bash
 cd backend
@@ -82,25 +85,37 @@ export SECRET_KEY="use_a_long_random_secret"
 
 `OPENAI_API_KEY` is optional because the project has local fallback behavior. `SECRET_KEY` should be a long random value for real deployments.
 
-Start the API:
+Start the application:
 ```bash
 python app.py
 ```
 
-The API runs at `http://localhost:5000` and creates `backend/projectmind.db` on first start. The database is intentionally ignored by Git because it contains local account/project data.
+Then open `http://localhost:5000`. Flask serves both the frontend and API from the same origin. The SQLite database is created automatically and is ignored by Git.
 
-## Run the Frontend
+## Live Deployment
 
-From another terminal, run:
+The repository includes `render.yaml` and Gunicorn configuration for a single public Flask web service. Render supports deploying Flask applications from a Git repository with a build command, start command, health check, and public `onrender.com` URL. citeturn0search0turn0search1
 
-```bash
-cd frontend
-python -m http.server 5500
+### Render settings
+
+```text
+Service type: Web Service
+Root directory: backend
+Build command: pip install -r requirements.txt
+Start command: gunicorn app:app --bind 0.0.0.0:$PORT
+Health check: /api/health
 ```
 
-Then open `http://localhost:5500` in your browser.
+Environment variables:
 
-**Important:** serve the `frontend` folder with an HTTP server rather than opening `index.html` directly with `file://`, because the application communicates with the Flask API using browser requests and session cookies.
+```text
+SECRET_KEY=<generate a long random secret>
+SESSION_COOKIE_SECURE=1
+OPENAI_API_KEY=<your OpenAI API key, optional>
+OPENAI_MODEL=<a model available to your API account>
+```
+
+The `render.yaml` file contains these deployment settings so the repository is ready to connect to Render. A real OpenAI key should be entered as a hosting secret, not committed to Git.
 
 ## Main User Flow
 
@@ -109,8 +124,8 @@ Then open `http://localhost:5500` in your browser.
 3. Generate project ideas.
 4. Save promising projects.
 5. Open **Workspace** to build a detailed technical blueprint.
-6. Open **Docs** to generate report content such as an abstract, SRS, methodology, testing chapter, or full report draft.
-7. Open **Viva** to practice project-specific viva/interview questions in Study Mode or Mock Viva Mode.
+6. Open **Docs** to generate report content.
+7. Open **Viva** to practice project-specific viva/interview questions.
 8. Use **AI Mentor** for project-specific questions and guidance.
 
 ## API Endpoints
@@ -129,27 +144,31 @@ Then open `http://localhost:5500` in your browser.
 
 ## OpenAI Integration
 
-The backend uses the OpenAI Responses API when an API key is configured. The Responses API can generate text or JSON and supports structured output formats, which is useful for reliable application data. Keep `OPENAI_MODEL` aligned with a model available to your API account.
+The backend uses the OpenAI Responses API when an API key is configured. The Responses API supports text and JSON responses and structured output formats for reliable application data. Keep `OPENAI_MODEL` aligned with a model available to your API account. citeturn0search0turn0search2
 
 ## Security Notes
 
 - Never commit a real API key or production secret.
 - `.env` files and `backend/projectmind.db` are ignored by Git.
 - Passwords are stored as hashes rather than plaintext.
-- Generated academic content is a draft and should be reviewed for correctness, citations, datasets, results, and institution-specific formatting before submission.
+- Generated academic content is a draft and should be reviewed for correctness, citations, datasets, results, and institution-specific formatting.
 
 ## Submission Checklist
 
 - [x] Public GitHub repository with clear README
-- [x] Frontend and backend separated into clear folders
-- [x] Student authentication and saved-project workflow
-- [x] AI project generation and mentor functionality
-- [x] Project workspace and documentation generator
-- [x] Viva and interview preparation module
-- [x] Environment example without real secrets
-- [x] Local database excluded from Git
-- [x] Basic run instructions included
+- [x] Responsive frontend
+- [x] Flask backend and REST API
+- [x] Authentication and password hashing
+- [x] SQLite persistence
+- [x] AI project generation with fallback behavior
+- [x] Saved projects and comparison
+- [x] AI Mentor
+- [x] Project Workspace
+- [x] Documentation Generator
+- [x] Viva & Interview Preparation
+- [x] Production deployment configuration
+- [x] Environment-variable protection
 
 ## Project Status
 
-ProjectMind AI is organized as a final-year project prototype suitable for demonstration and academic submission. AI-generated project ideas, documentation, and viva answers should be reviewed and customized before being used in an official academic submission.
+ProjectMind AI is organized as a final-year project prototype ready for demonstration, hosting, and academic submission. AI-generated content should be reviewed and customized before official submission.
