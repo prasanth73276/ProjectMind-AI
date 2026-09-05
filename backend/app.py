@@ -8,24 +8,62 @@ from openai import OpenAI
 app = Flask(__name__)
 CORS(app)
 
+ALLOWED_DIFFICULTIES = {'Beginner', 'Intermediate', 'Advanced'}
+ALLOWED_DURATIONS = {'1-2 months', '3-4 months', '5-6 months'}
+
 
 def fallback_projects(skills, interests, difficulty, duration):
     stack = [s.strip() for s in skills.split(',') if s.strip()]
-    if any(word in skills.lower() for word in ['python', 'machine learning', 'ml', 'ai']):
-        technologies = stack + ['Flask', 'scikit-learn', 'PostgreSQL']
-    elif 'java' in skills.lower():
-        technologies = stack + ['Spring Boot', 'MySQL', 'REST API']
+    lower_skills = skills.lower()
+
+    if any(word in lower_skills for word in ['python', 'machine learning', 'ml', 'ai']):
+        base_technologies = ['Flask', 'scikit-learn', 'PostgreSQL']
+    elif 'java' in lower_skills:
+        base_technologies = ['Spring Boot', 'MySQL', 'REST API']
+    elif any(word in lower_skills for word in ['react', 'javascript', 'html', 'css']):
+        base_technologies = ['React', 'Node.js', 'Express', 'MongoDB']
     else:
-        technologies = stack + ['Python', 'Flask', 'SQLite']
-    technologies = list(dict.fromkeys(technologies))
-    return [{
-        'title': f'AI-Powered {interests.title()} Assistant',
-        'description': f'A {difficulty.lower()}-level {duration} project designed around {interests} using your skills in {skills}.',
-        'technologies': technologies,
-        'features': ['Personalized dashboard', 'Recommendation engine', 'Search and filters', 'Progress analytics', 'Export results'],
-        'roadmap': ['Define requirements', 'Design database and API', 'Build frontend', 'Implement AI and backend', 'Test and deploy'],
-        'advanced': ['Add an LLM', 'Add authentication', 'Add feedback-based personalization', 'Add analytics and monitoring']
-    }]
+        base_technologies = ['Python', 'Flask', 'SQLite']
+
+    technologies = list(dict.fromkeys(stack + base_technologies))
+    domain = interests.title()
+    level = difficulty.lower()
+
+    templates = [
+        (
+            f'{domain} Recommendation System',
+            f'A {level}-level {duration} project that recommends useful {domain.lower()} resources, solutions, or next steps based on user needs and your skills in {skills}.',
+            ['Personalized recommendations', 'Search and filters', 'User dashboard', 'Recommendation history', 'Feedback collection'],
+            ['Define requirements and recommendation rules', 'Design database and API', 'Build the frontend and dashboard', 'Implement recommendation logic', 'Test, deploy, and collect feedback'],
+            ['Add an LLM assistant', 'Add user authentication', 'Use feedback to improve recommendations', 'Add analytics and monitoring']
+        ),
+        (
+            f'Smart {domain} Management Platform',
+            f'A practical {level}-level {duration} platform for organizing, tracking, and improving {domain.lower()} workflows while applying your existing skills in {skills}.',
+            ['Interactive dashboard', 'Create and manage records', 'Progress tracking', 'Reports and export', 'Notifications or reminders'],
+            ['Plan the user flow', 'Design the database', 'Create backend APIs', 'Build the responsive interface', 'Test and deploy'],
+            ['Add real-time updates', 'Add role-based access', 'Add predictive analytics', 'Add cloud monitoring']
+        ),
+        (
+            f'AI Assistant for {domain}',
+            f'A {level}-level {duration} assistant that helps students or users solve common {domain.lower()} problems with guided recommendations and intelligent search.',
+            ['AI-powered question answering', 'Suggested actions', 'Knowledge/search module', 'Conversation history', 'Useful resource links'],
+            ['Collect use cases and data', 'Design the assistant workflow', 'Build the API and interface', 'Connect the AI/recommendation layer', 'Evaluate responses and deploy'],
+            ['Add retrieval-augmented generation', 'Add document upload', 'Add voice interaction', 'Add response-quality analytics']
+        )
+    ]
+
+    return [
+        {
+            'title': title,
+            'description': description,
+            'technologies': technologies,
+            'features': features,
+            'roadmap': roadmap,
+            'advanced': advanced
+        }
+        for title, description, features, roadmap, advanced in templates
+    ]
 
 
 def generate_with_ai(skills, interests, difficulty, duration):
@@ -75,6 +113,12 @@ def generate():
 
     if not skills or not interests:
         return jsonify({'error': 'skills and interests are required'}), 400
+    if difficulty not in ALLOWED_DIFFICULTIES:
+        return jsonify({'error': 'invalid difficulty'}), 400
+    if duration not in ALLOWED_DURATIONS:
+        return jsonify({'error': 'invalid duration'}), 400
+    if len(skills) > 500 or len(interests) > 300:
+        return jsonify({'error': 'skills or interests are too long'}), 400
 
     try:
         projects = generate_with_ai(skills, interests, difficulty, duration)
