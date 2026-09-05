@@ -9,14 +9,28 @@ const mentorForm = document.getElementById('mentorForm');
 const mentorInput = document.getElementById('mentorInput');
 const mentorSend = document.getElementById('mentorSend');
 const mentorMessages = document.getElementById('mentorMessages');
+const authBtn = document.getElementById('authBtn');
+const authModal = document.getElementById('authModal');
+const authClose = document.getElementById('authClose');
+const authForm = document.getElementById('authForm');
+const authTitle = document.getElementById('authTitle');
+const authSubmit = document.getElementById('authSubmit');
+const authSwitch = document.getElementById('authSwitch');
+const authMessage = document.getElementById('authMessage');
+const nameField = document.getElementById('nameField');
+const authName = document.getElementById('authName');
+const authEmail = document.getElementById('authEmail');
+const authPassword = document.getElementById('authPassword');
 const STORAGE_KEY = 'projectmind_saved_projects';
 let currentProjects = [];
+let currentUser = null;
+let registerMode = false;
 
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const list = (items, ordered = false) => { const tag = ordered ? 'ol' : 'ul'; return `<${tag}>${(items || []).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</${tag}>`; };
 
 async function api(path, options = {}) {
-  const response = await fetch(`${API}${path}`, { headers: {'Content-Type': 'application/json', ...(options.headers || {})}, ...options });
+  const response = await fetch(`${API}${path}`, { credentials: 'include', headers: {'Content-Type': 'application/json', ...(options.headers || {})}, ...options });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || 'Request failed');
   return data;
@@ -54,7 +68,43 @@ function renderCurrentProjects() {
   results.innerHTML = currentProjects.map((project, index) => `<article class="project"><div class="project-top"><p class="eyebrow">PROJECT ${index + 1}</p><button class="save-btn ${savedTitles.has(project.title) ? 'saved' : ''}" data-title="${escapeHtml(project.title)}">${savedTitles.has(project.title) ? '♥ Saved' : '♡ Save Project'}</button></div><h2>${escapeHtml(project.title)}</h2><p>${escapeHtml(project.description)}</p><h3>🛠 Recommended Technologies</h3>${list(project.technologies)}<h3>✨ Key Features</h3>${list(project.features)}<h3>🗺 Development Roadmap</h3>${list(project.roadmap,true)}<h3>🚀 Advanced Improvements</h3>${list(project.advanced)}</article>`).join('');
 }
 
+function openAuth(mode = 'login') {
+  registerMode = mode === 'register';
+  authTitle.textContent = registerMode ? 'Create your account' : 'Welcome back';
+  authSubmit.textContent = registerMode ? 'Create Account' : 'Login';
+  authSwitch.textContent = registerMode ? 'Already have an account? Login' : 'New here? Create an account';
+  nameField.hidden = !registerMode;
+  authMessage.textContent = '';
+  authModal.hidden = false;
+  setTimeout(() => (registerMode ? authName : authEmail).focus(), 50);
+}
+function closeAuth() { authModal.hidden = true; }
+
+function updateAuthUI() {
+  if (currentUser) {
+    authBtn.textContent = `Logout (${currentUser.name})`;
+    authBtn.title = currentUser.email || '';
+    mentorMessages.querySelector('.mentor-welcome span').textContent = `Logged in as ${currentUser.name}. Ask anything about your final-year project.`;
+  } else {
+    authBtn.textContent = 'Login';
+    authBtn.title = '';
+    mentorMessages.querySelector('.mentor-welcome span').textContent = 'Log in to chat with your AI mentor.';
+  }
+}
+
+async function loadSession() {
+  try {
+    const data = await api('/me');
+    currentUser = data.authenticated ? data.user : null;
+    updateAuthUI();
+  } catch {
+    currentUser = null;
+    updateAuthUI();
+  }
+}
+
 button.addEventListener('click', async () => {
+  if (!currentUser) { openAuth('login'); return; }
   const skills = document.getElementById('skills').value.trim(), interests = document.getElementById('interests').value.trim(), difficulty = document.getElementById('difficulty').value, duration = document.getElementById('duration').value;
   if (!skills || !interests) { results.innerHTML = '<div class="card error">Please enter both your skills and interests.</div>'; return; }
   button.disabled = true; button.innerHTML = '<span>✦</span> Generating your ideas...'; results.innerHTML = '<div class="card">✨ Finding projects that match your profile...</div>';
@@ -65,10 +115,40 @@ button.addEventListener('click', async () => {
 
 results.addEventListener('click', event => { const save = event.target.closest('.save-btn'); if (save) { const project = currentProjects.find(p => p.title === save.dataset.title); if (project) saveProject(project); } });
 savedProjects.addEventListener('click', event => { const remove = event.target.closest('.remove-btn'); const compare = event.target.closest('.compare-btn'); if (remove) removeProject(remove.dataset.title); if (compare) compareProject(); });
-savedBtn.addEventListener('click', () => { savedSection.hidden = false; renderSaved(); savedSection.scrollIntoView({behavior:'smooth'}); });
+savedBtn.addEventListener('click', () => { if (!currentUser) { openAuth('login'); return; } savedSection.hidden = false; renderSaved(); savedSection.scrollIntoView({behavior:'smooth'}); });
+
+authBtn.addEventListener('click', async () => {
+  if (!currentUser) { openAuth('login'); return; }
+  try { await api('/logout', {method:'POST', body:'{}'}); currentUser = null; currentProjects = []; updateAuthUI(); results.innerHTML = '<div class="card">You have been logged out.</div>'; }
+  catch (e) { authMessage.textContent = e.message; }
+});
+authClose.addEventListener('click', closeAuth);
+authModal.addEventListener('click', e => { if (e.target === authModal) closeAuth(); });
+authSwitch.addEventListener('click', () => openAuth(registerMode ? 'login' : 'register'));
+
+authForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  authSubmit.disabled = true;
+  authMessage.textContent = '';
+  try {
+    const endpoint = registerMode ? '/register' : '/login';
+    const body = registerMode ? {name: authName.value.trim(), email: authEmail.value.trim(), password: authPassword.value} : {email: authEmail.value.trim(), password: authPassword.value};
+    const data = await api(endpoint, {method:'POST', body:JSON.stringify(body)});
+    currentUser = data.user;
+    authForm.reset();
+    closeAuth();
+    updateAuthUI();
+    results.innerHTML = `<div class="card">Welcome, ${escapeHtml(currentUser.name)}! You can now generate projects and use the AI mentor.</div>`;
+  } catch (e) {
+    authMessage.textContent = e.message;
+  } finally {
+    authSubmit.disabled = false;
+  }
+});
 
 mentorForm.addEventListener('submit', async event => {
   event.preventDefault();
+  if (!currentUser) { openAuth('login'); return; }
   const message = mentorInput.value.trim(); if (!message) return;
   mentorInput.value = ''; mentorSend.disabled = true;
   mentorMessages.insertAdjacentHTML('beforeend', `<div class="mentor-message user-message">${escapeHtml(message)}</div><div class="mentor-message assistant-message">Thinking…</div>`);
@@ -83,6 +163,7 @@ mentorForm.addEventListener('submit', async event => {
   } finally { mentorSend.disabled = false; mentorInput.focus(); mentorMessages.scrollTop = mentorMessages.scrollHeight; }
 });
 
-document.querySelectorAll('.mentor-prompts button').forEach(btn => btn.addEventListener('click', () => { mentorInput.value = btn.dataset.prompt; mentorInput.focus(); }));
+document.querySelectorAll('.mentor-prompts button').forEach(btn => btn.addEventListener('click', () => { if (!currentUser) { openAuth('login'); return; } mentorInput.value = btn.dataset.prompt; mentorInput.focus(); }));
 
 renderSaved();
+loadSession();
