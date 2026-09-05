@@ -86,14 +86,17 @@ function closeAuth() { authModal.hidden = true; }
 
 function updateAuthUI() {
   const welcome = mentorMessages?.querySelector('.mentor-welcome span');
+  const heading = document.querySelector('#generator .section-heading p:last-child');
   if (currentUser) {
     authBtn.textContent = `Logout (${currentUser.name})`;
     authBtn.title = currentUser.email || '';
     if (welcome) welcome.textContent = `Logged in as ${currentUser.name}. Ask anything about your final-year project.`;
+    if (heading) heading.textContent = 'You are logged in. Enter your skills and interests to generate personalized project ideas.';
   } else {
     authBtn.textContent = 'Login';
     authBtn.title = '';
     if (welcome) welcome.textContent = 'Log in to chat with your AI mentor.';
+    if (heading) heading.textContent = 'Log in to generate and save personalized project ideas.';
   }
 }
 
@@ -139,15 +142,21 @@ authForm.addEventListener('submit', async event => {
     const body = registerMode ? {name: authName.value.trim(), email: authEmail.value.trim(), password: authPassword.value} : {email: authEmail.value.trim(), password: authPassword.value};
     const data = await api(endpoint, {method:'POST', body:JSON.stringify(body), cache:'no-store'});
 
-    // The server has accepted the credentials. Confirm the session cookie was
-    // stored before updating the UI, so a successful request cannot look like
-    // a failed login in the browser.
-    await loadSession();
-    if (!currentUser) throw new Error('Login succeeded, but the browser did not keep the login session. Please refresh the page and try again.');
+    // Use the user returned by the successful auth response immediately.
+    // Do not make the UI depend on a second request to /api/me.
+    currentUser = data.user || null;
+    if (!currentUser) throw new Error('The server accepted the request but did not return a user account.');
 
     authForm.reset();
     closeAuth();
-    results.innerHTML = `<div class="card">Welcome, ${escapeHtml(currentUser.name)}! You can now generate projects and use the AI mentor.</div>`;
+    updateAuthUI();
+    savedSection.hidden = true;
+    results.innerHTML = `<div class="card"><strong>✓ Login successful</strong><br>Welcome, ${escapeHtml(currentUser.name)}! Project generation and AI Mentor are now unlocked.</div>`;
+    document.getElementById('generator').scrollIntoView({behavior:'smooth', block:'start'});
+
+    // Reload once so the authenticated state is also restored from the server
+    // session on a fresh page load. The backend remains the source of truth.
+    setTimeout(() => window.location.reload(), 350);
   } catch (e) {
     authMessage.textContent = e.message;
   } finally {
