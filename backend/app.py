@@ -22,6 +22,8 @@ CORS(app, supports_credentials=True)
 
 ALLOWED_DIFFICULTIES = {'Beginner', 'Intermediate', 'Advanced'}
 ALLOWED_DURATIONS = {'1-2 months', '3-4 months', '5-6 months'}
+DEMO_EMAIL = 'student@projectmind.ai'
+DEMO_PASSWORD = 'ProjectMind@123'
 
 
 def init_db():
@@ -35,6 +37,9 @@ def init_db():
             interests TEXT DEFAULT '',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )''')
+        existing = conn.execute('SELECT id FROM users WHERE email = ?', (DEMO_EMAIL,)).fetchone()
+        if not existing:
+            conn.execute('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)', ('Demo Student', DEMO_EMAIL, generate_password_hash(DEMO_PASSWORD)))
         conn.commit()
 
 
