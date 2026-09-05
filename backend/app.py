@@ -9,11 +9,17 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from mentor import mentor_reply
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(__file__)
+FRONTEND_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'frontend'))
+
+app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
 app.secret_key = os.getenv('SECRET_KEY', 'change-this-development-secret')
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE', '0') == '1'
 CORS(app, supports_credentials=True)
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'projectmind.db')
+DB_PATH = os.path.join(BASE_DIR, 'projectmind.db')
 ALLOWED_DIFFICULTIES = {'Beginner', 'Intermediate', 'Advanced'}
 ALLOWED_DURATIONS = {'1-2 months', '3-4 months', '5-6 months'}
 
@@ -96,6 +102,11 @@ def generate_with_ai(skills, interests, difficulty, duration):
     if not isinstance(data.get('projects'), list) or len(data['projects']) != 3:
         raise ValueError('AI returned an invalid project list')
     return data['projects']
+
+
+@app.get('/')
+def home():
+    return app.send_static_file('index.html')
 
 
 @app.get('/api/health')
@@ -239,4 +250,5 @@ def generate():
 init_db()
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    port = int(os.getenv('PORT', '5000'))
+    app.run(host='0.0.0.0', debug=False, port=port)
