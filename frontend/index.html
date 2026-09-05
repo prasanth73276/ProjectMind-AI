@@ -11,7 +11,6 @@
   <nav class="nav container">
     <div class="brand"><span class="brand-mark">✦</span> ProjectMind <span>AI</span></div>
     <div class="nav-actions">
-      <button id="authBtn" class="nav-button" type="button">Log in</button>
       <button id="savedBtn" class="nav-button" type="button">♡ Saved <span id="savedCount">0</span></button>
       <a href="#mentor" class="nav-link">AI Mentor</a>
       <a href="workspace.html" class="nav-link">Workspace</a>
@@ -48,7 +47,7 @@
     <section id="mentor" class="mentor-section container">
       <div class="section-heading"><p class="eyebrow">PROJECT MENTOR</p><h2>Ask your AI mentor</h2><p>Get practical guidance on your project, roadmap, modules, datasets, technology choices, and advanced features.</p></div>
       <div class="card mentor-card">
-        <div id="mentorMessages" class="mentor-messages" aria-live="polite"><div class="mentor-welcome"><strong>✦ ProjectMind Mentor</strong><span>Log in to start a personalized conversation.</span></div></div>
+        <div id="mentorMessages" class="mentor-messages" aria-live="polite"><div class="mentor-welcome"><strong>✦ ProjectMind Mentor</strong><span>Ask anything about your final-year project.</span></div></div>
         <form id="mentorForm" class="mentor-form">
           <input id="mentorInput" maxlength="2000" placeholder="Ask: Which project is best for me?" autocomplete="off" required>
           <button id="mentorSend" class="generate-btn" type="submit">Ask Mentor</button>
@@ -58,36 +57,10 @@
     </section>
 
     <section id="savedSection" class="saved-section container" hidden>
-      <div class="section-heading"><p class="eyebrow">MY DASHBOARD</p><h2>Saved Projects</h2><p>Keep your strongest ideas and compare them before choosing your final-year project.</p></div>
+      <div class="section-heading"><p class="eyebrow">MY PROJECTS</p><h2>Saved Projects</h2><p>Your saved ideas are stored in this browser—no account or login required.</p></div>
       <div id="savedProjects" class="saved-grid"></div>
     </section>
-
-    <section id="profileSection" class="profile-section container" hidden>
-      <div class="section-heading"><p class="eyebrow">STUDENT PROFILE</p><h2>My Profile</h2><p>Keep your skills and interests ready for personalized project generation.</p></div>
-      <form id="profileForm" class="card profile-form">
-        <div class="field"><label for="profileName">Name</label><input id="profileName" required></div>
-        <div class="field"><label for="profileEmail">Email</label><input id="profileEmail" disabled></div>
-        <div class="field full"><label for="profileSkills">Skills</label><input id="profileSkills" placeholder="Python, Java, AI, React..."></div>
-        <div class="field full"><label for="profileInterests">Interests</label><input id="profileInterests" placeholder="AI, healthcare, finance..."></div>
-        <button class="generate-btn" type="submit">Save Profile</button>
-      </form>
-    </section>
   </main>
-
-  <div id="authModal" class="modal" hidden>
-    <div class="modal-card">
-      <button id="closeAuth" class="modal-close" type="button">×</button>
-      <p class="eyebrow">STUDENT ACCOUNT</p><h2 id="authTitle">Log in</h2>
-      <form id="authForm">
-        <div id="nameField" class="field" hidden><label for="authName">Name</label><input id="authName"></div>
-        <div class="field"><label for="authEmail">Email</label><input id="authEmail" type="email" required></div>
-        <div class="field"><label for="authPassword">Password</label><input id="authPassword" type="password" minlength="6" required></div>
-        <button class="generate-btn" type="submit" id="authSubmit">Log in</button>
-      </form>
-      <button id="authSwitch" class="text-button" type="button">Create an account</button>
-      <div id="authMessage" class="auth-message"></div>
-    </div>
-  </div>
 
   <footer class="footer"><div class="container">ProjectMind AI · Built for final-year students</div></footer>
   <script src="script.js"></script>
