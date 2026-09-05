@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="ProjectMind AI helps final-year students discover personalized project ideas, technologies, features, and roadmaps.">
+  <meta name="description" content="ProjectMind AI helps final-year students discover personalized project ideas, technologies, features, roadmaps, and mentor guidance.">
   <title>ProjectMind AI — Find Your Final-Year Project</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -13,6 +13,7 @@
     <div class="nav-actions">
       <button id="authBtn" class="nav-button" type="button">Log in</button>
       <button id="savedBtn" class="nav-button" type="button">♡ Saved <span id="savedCount">0</span></button>
+      <a href="#mentor" class="nav-link">AI Mentor</a>
       <a href="#generator" class="nav-link">Get Started</a>
     </div>
   </nav>
@@ -40,6 +41,18 @@
     </section>
 
     <section class="results-section container"><div id="results" class="results" aria-live="polite"></div></section>
+
+    <section id="mentor" class="mentor-section container">
+      <div class="section-heading"><p class="eyebrow">PROJECT MENTOR</p><h2>Ask your AI mentor</h2><p>Get practical guidance on your project, roadmap, modules, datasets, technology choices, and advanced features.</p></div>
+      <div class="card mentor-card">
+        <div id="mentorMessages" class="mentor-messages" aria-live="polite"><div class="mentor-welcome"><strong>✦ ProjectMind Mentor</strong><span>Log in to start a personalized conversation.</span></div></div>
+        <form id="mentorForm" class="mentor-form">
+          <input id="mentorInput" maxlength="2000" placeholder="Ask: Which project is best for me?" autocomplete="off" required>
+          <button id="mentorSend" class="generate-btn" type="submit">Ask Mentor</button>
+        </form>
+        <div class="mentor-prompts"><button type="button" data-prompt="Which of my saved projects is best for my skills?">Compare my projects</button><button type="button" data-prompt="Give me a 4-month development roadmap for my best project.">Make a roadmap</button><button type="button" data-prompt="How can I make my project unique and impressive?">Make it unique</button></div>
+      </div>
+    </section>
 
     <section id="savedSection" class="saved-section container" hidden>
       <div class="section-heading"><p class="eyebrow">MY DASHBOARD</p><h2>Saved Projects</h2><p>Keep your strongest ideas and compare them before choosing your final-year project.</p></div>
