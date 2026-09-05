@@ -15,13 +15,13 @@
 <div class="section-heading"><p class="eyebrow">PROJECT WORKSPACE</p><h1 style="font-size:clamp(38px,6vw,60px);letter-spacing:-2px">Build your project plan.</h1><p>Turn a saved idea into a complete final-year project blueprint with architecture, modules, database design, roadmap, datasets, documentation, and viva preparation.</p></div>
 <div class="card workspace-card">
 <div class="workspace-grid"><div class="field"><label for="project">Choose a saved project</label><select id="project"><option>Loading saved projects...</option></select></div><div class="field"><label for="duration">Timeline</label><select id="duration"><option>1-2 months</option><option selected>3-4 months</option><option>5-6 months</option></select></div></div>
-<div class="workspace-actions"><button id="build" class="generate-btn" type="button">✦ Create Project Workspace</button><a class="secondary-btn" href="documentation.html">Generate Docs</a><a class="secondary-btn" href="viva.html">Prepare Viva</a></div><div id="status" class="status"></div>
+<div class="workspace-actions"><button id="build" class="generate-btn" type="button">✦ Create Project Workspace</button><a class="secondary-btn" href="index.html#mentor">Ask AI Mentor</a><a class="secondary-btn" href="documentation.html">Create Docs</a><a class="secondary-btn" href="viva.html">Prepare Viva</a></div><div id="status" class="status"></div>
 </div>
 <div id="output" class="card workspace-card workspace-output" hidden></div>
 </main>
 <footer class="footer"><div class="container">ProjectMind AI · Project Workspace</div></footer>
 <script>
-const API='http://localhost:5000/api';const select=document.getElementById('project'),build=document.getElementById('build'),output=document.getElementById('output'),status=document.getElementById('status');let projects=[];
+const API='/api';const select=document.getElementById('project'),build=document.getElementById('build'),output=document.getElementById('output'),status=document.getElementById('status');let projects=[];
 async function api(path,options={}){const r=await fetch(API+path,{credentials:'include',headers:{'Content-Type':'application/json'},...options});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'Request failed');return d}
 function esc(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\\':'&#39;'}[c]));}
 async function init(){try{const me=await api('/auth/me');if(!me.user){status.textContent='Please log in on the main app first.';select.innerHTML='<option>Login required</option>';build.disabled=true;return}const d=await api('/saved');projects=d.projects||[];select.innerHTML=projects.length?projects.map((p,i)=>`<option value="${i}">${esc(p.title)}</option>`).join(''):'<option>No saved projects</option>';if(!projects.length)build.disabled=true}catch(e){status.textContent=e.message}}
