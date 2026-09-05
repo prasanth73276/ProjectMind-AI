@@ -10,7 +10,10 @@
 <body>
   <nav class="nav container">
     <div class="brand"><span class="brand-mark">✦</span> ProjectMind <span>AI</span></div>
-    <a href="#generator" class="nav-link">Get Started</a>
+    <div class="nav-actions">
+      <button id="savedBtn" class="nav-button" type="button">♡ Saved <span id="savedCount">0</span></button>
+      <a href="#generator" class="nav-link">Get Started</a>
+    </div>
   </nav>
 
   <main>
@@ -19,9 +22,7 @@
         <p class="eyebrow">AI-POWERED PROJECT PLANNER</p>
         <h1>Turn your skills into a <span>project worth building.</span></h1>
         <p class="hero-text">Tell us what you know and what you love. ProjectMind AI creates practical final-year project ideas with the right technology, features, roadmap, and next-level improvements.</p>
-        <div class="hero-points">
-          <span>✓ Personalized</span><span>✓ Practical</span><span>✓ Final-year ready</span>
-        </div>
+        <div class="hero-points"><span>✓ Personalized</span><span>✓ Practical</span><span>✓ Final-year ready</span></div>
       </div>
       <div class="hero-card">
         <div class="sparkle">✦</div>
@@ -49,19 +50,11 @@
         </div>
         <div class="field">
           <label for="difficulty">Difficulty</label>
-          <select id="difficulty">
-            <option value="Beginner">Beginner</option>
-            <option value="Intermediate" selected>Intermediate</option>
-            <option value="Advanced">Advanced</option>
-          </select>
+          <select id="difficulty"><option value="Beginner">Beginner</option><option value="Intermediate" selected>Intermediate</option><option value="Advanced">Advanced</option></select>
         </div>
         <div class="field">
           <label for="duration">Expected duration</label>
-          <select id="duration">
-            <option value="1-2 months">1–2 months</option>
-            <option value="3-4 months" selected>3–4 months</option>
-            <option value="5-6 months">5–6 months</option>
-          </select>
+          <select id="duration"><option value="1-2 months">1–2 months</option><option value="3-4 months" selected>3–4 months</option><option value="5-6 months">5–6 months</option></select>
         </div>
         <button id="generateBtn" class="generate-btn" type="button"><span>✦</span> Generate My Ideas</button>
       </div>
@@ -69,6 +62,15 @@
 
     <section class="results-section container">
       <div id="results" class="results" aria-live="polite"></div>
+    </section>
+
+    <section id="savedSection" class="saved-section container" hidden>
+      <div class="section-heading">
+        <p class="eyebrow">MY DASHBOARD</p>
+        <h2>Saved Projects</h2>
+        <p>Keep your strongest ideas and compare them before choosing your final-year project.</p>
+      </div>
+      <div id="savedProjects" class="saved-grid"></div>
     </section>
   </main>
 
