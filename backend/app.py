@@ -7,6 +7,8 @@ from flask_cors import CORS
 from openai import OpenAI
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from mentor import mentor_reply
+
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'change-this-development-secret')
 CORS(app, supports_credentials=True)
@@ -114,7 +116,7 @@ def signup():
     except sqlite3.IntegrityError:
         return jsonify({'error': 'An account with this email already exists.'}), 409
     session['user_id'] = user_id
-    return jsonify({'message': 'Account created', 'user': {'id': user_id, 'name': name, 'email': email}}), 201
+    return jsonify({'message': 'Account created', 'user': {'id': user_id, 'name': name, 'email': email, 'skills': '', 'interests': ''}}), 201
 
 
 @app.post('/api/auth/login')
@@ -122,11 +124,11 @@ def login():
     data = request.get_json(silent=True) or {}
     email, password = str(data.get('email', '')).strip().lower(), str(data.get('password', ''))
     with db() as connection:
-        user = connection.execute('SELECT id, name, email, password_hash FROM users WHERE email = ?', (email,)).fetchone()
+        user = connection.execute('SELECT id, name, email, password_hash, skills, interests FROM users WHERE email = ?', (email,)).fetchone()
     if not user or not check_password_hash(user['password_hash'], password):
         return jsonify({'error': 'Invalid email or password.'}), 401
     session['user_id'] = user['id']
-    return jsonify({'message': 'Logged in', 'user': {'id': user['id'], 'name': user['name'], 'email': user['email']}})
+    return jsonify({'message': 'Logged in', 'user': {'id': user['id'], 'name': user['name'], 'email': user['email'], 'skills': user['skills'], 'interests': user['interests']}})
 
 
 @app.post('/api/auth/logout')
@@ -192,6 +194,26 @@ def delete_project():
     with db() as connection:
         connection.execute('DELETE FROM saved_projects WHERE user_id = ? AND title = ?', (user['id'], title))
     return jsonify({'message': 'Project removed'})
+
+
+@app.post('/api/mentor')
+def mentor():
+    user, error = require_user()
+    if error:
+        return error
+    data = request.get_json(silent=True) or {}
+    message = str(data.get('message', '')).strip()
+    if not message or len(message) > 2000:
+        return jsonify({'error': 'Enter a message up to 2000 characters.'}), 400
+    with db() as connection:
+        rows = connection.execute('SELECT project_json FROM saved_projects WHERE user_id = ? ORDER BY id DESC LIMIT 5', (user['id'],)).fetchall()
+    projects = [json.loads(row['project_json']) for row in rows]
+    try:
+        reply = mentor_reply(message, dict(user), projects)
+        return jsonify({'reply': reply})
+    except Exception:
+        app.logger.exception('Mentor generation failed')
+        return jsonify({'error': 'Mentor is temporarily unavailable. Check your API key and backend logs.'}), 500
 
 
 @app.post('/api/generate')
