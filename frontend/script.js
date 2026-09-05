@@ -1,4 +1,4 @@
-const API = 'http://localhost:5000/api';
+const API = '/api';
 const button = document.getElementById('generateBtn');
 const results = document.getElementById('results');
 const savedBtn = document.getElementById('savedBtn');
@@ -82,8 +82,6 @@ async function compareProject() {
   } catch (e) { alert(e.message); }
 }
 
-async function isSaved(title) { try { const data = await api('/saved'); return (data.projects || []).some(p => p.title === title); } catch { return false; } }
-
 async function renderCurrentProjects() {
   if (!currentProjects.length) return;
   const savedData = user ? await api('/saved').catch(() => ({projects:[]})) : {projects:[]};
@@ -96,7 +94,7 @@ button.addEventListener('click', async () => {
   if (!skills || !interests) { results.innerHTML = '<div class="card error">Please enter both your skills and interests.</div>'; return; }
   button.disabled = true; button.innerHTML = '<span>✦</span> Generating your ideas...'; results.innerHTML = '<div class="card">✨ Finding projects that match your profile...</div>';
   try { const data = await api('/generate', {method:'POST', body:JSON.stringify({skills,interests,difficulty,duration})}); currentProjects = data.projects || []; renderCurrentProjects(); }
-  catch (e) { results.innerHTML = `<div class="card error"><strong>Unable to generate ideas.</strong><br>${escapeHtml(e.message)}<br><small>Make sure the Flask backend is running on port 5000.</small></div>`; }
+  catch (e) { results.innerHTML = `<div class="card error"><strong>Unable to generate ideas.</strong><br>${escapeHtml(e.message)}</div>`; }
   finally { button.disabled = false; button.innerHTML = '<span>✦</span> Generate My Ideas'; }
 });
 
