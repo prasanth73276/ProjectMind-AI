@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProjectMind AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <p class="eyebrow">AI PROJECT ASSISTANT</p>
+      <h1>ProjectMind AI</h1>
+      <p>Find a final-year project that matches your skills, interests, and goals.</p>
+    </header>
+
+    <section class="card">
+      <label for="skills">Your skills</label>
+      <input id="skills" type="text" placeholder="e.g. Python, Java, Machine Learning">
+
+      <label for="interests">Your interests</label>
+      <input id="interests" type="text" placeholder="e.g. AI, healthcare, education">
+
+      <button id="generateBtn">Generate Project Ideas</button>
+    </section>
+
+    <section id="results" class="results" aria-live="polite"></section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
