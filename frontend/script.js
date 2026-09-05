@@ -30,7 +30,11 @@ const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'
 const list = (items, ordered = false) => { const tag = ordered ? 'ol' : 'ul'; return `<${tag}>${(items || []).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</${tag}>`; };
 
 async function api(path, options = {}) {
-  const response = await fetch(`${API}${path}`, { credentials: 'include', headers: {'Content-Type': 'application/json', ...(options.headers || {})}, ...options });
+  const response = await fetch(`${API}${path}`, {
+    ...options,
+    credentials: 'include',
+    headers: {'Content-Type': 'application/json', ...(options.headers || {})}
+  });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || 'Request failed');
   return data;
@@ -81,26 +85,26 @@ function openAuth(mode = 'login') {
 function closeAuth() { authModal.hidden = true; }
 
 function updateAuthUI() {
+  const welcome = mentorMessages?.querySelector('.mentor-welcome span');
   if (currentUser) {
     authBtn.textContent = `Logout (${currentUser.name})`;
     authBtn.title = currentUser.email || '';
-    mentorMessages.querySelector('.mentor-welcome span').textContent = `Logged in as ${currentUser.name}. Ask anything about your final-year project.`;
+    if (welcome) welcome.textContent = `Logged in as ${currentUser.name}. Ask anything about your final-year project.`;
   } else {
     authBtn.textContent = 'Login';
     authBtn.title = '';
-    mentorMessages.querySelector('.mentor-welcome span').textContent = 'Log in to chat with your AI mentor.';
+    if (welcome) welcome.textContent = 'Log in to chat with your AI mentor.';
   }
 }
 
 async function loadSession() {
   try {
-    const data = await api('/me');
+    const data = await api('/me', {cache: 'no-store'});
     currentUser = data.authenticated ? data.user : null;
-    updateAuthUI();
   } catch {
     currentUser = null;
-    updateAuthUI();
   }
+  updateAuthUI();
 }
 
 button.addEventListener('click', async () => {
@@ -133,11 +137,16 @@ authForm.addEventListener('submit', async event => {
   try {
     const endpoint = registerMode ? '/register' : '/login';
     const body = registerMode ? {name: authName.value.trim(), email: authEmail.value.trim(), password: authPassword.value} : {email: authEmail.value.trim(), password: authPassword.value};
-    const data = await api(endpoint, {method:'POST', body:JSON.stringify(body)});
-    currentUser = data.user;
+    const data = await api(endpoint, {method:'POST', body:JSON.stringify(body), cache:'no-store'});
+
+    // The server has accepted the credentials. Confirm the session cookie was
+    // stored before updating the UI, so a successful request cannot look like
+    // a failed login in the browser.
+    await loadSession();
+    if (!currentUser) throw new Error('Login succeeded, but the browser did not keep the login session. Please refresh the page and try again.');
+
     authForm.reset();
     closeAuth();
-    updateAuthUI();
     results.innerHTML = `<div class="card">Welcome, ${escapeHtml(currentUser.name)}! You can now generate projects and use the AI mentor.</div>`;
   } catch (e) {
     authMessage.textContent = e.message;
