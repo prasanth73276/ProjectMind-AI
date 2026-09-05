@@ -3,29 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ProjectMind AI</title>
+  <meta name="description" content="ProjectMind AI helps final-year students discover personalized project ideas, technologies, features, and roadmaps.">
+  <title>ProjectMind AI — Find Your Final-Year Project</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="container">
-    <header>
-      <p class="eyebrow">AI PROJECT ASSISTANT</p>
-      <h1>ProjectMind AI</h1>
-      <p>Find a final-year project that matches your skills, interests, and goals.</p>
-    </header>
+  <nav class="nav container">
+    <div class="brand"><span class="brand-mark">✦</span> ProjectMind <span>AI</span></div>
+    <a href="#generator" class="nav-link">Get Started</a>
+  </nav>
 
-    <section class="card">
-      <label for="skills">Your skills</label>
-      <input id="skills" type="text" placeholder="e.g. Python, Java, Machine Learning">
-
-      <label for="interests">Your interests</label>
-      <input id="interests" type="text" placeholder="e.g. AI, healthcare, education">
-
-      <button id="generateBtn">Generate Project Ideas</button>
+  <main>
+    <section class="hero container">
+      <div class="hero-copy">
+        <p class="eyebrow">AI-POWERED PROJECT PLANNER</p>
+        <h1>Turn your skills into a <span>project worth building.</span></h1>
+        <p class="hero-text">Tell us what you know and what you love. ProjectMind AI creates practical final-year project ideas with the right technology, features, roadmap, and next-level improvements.</p>
+        <div class="hero-points">
+          <span>✓ Personalized</span><span>✓ Practical</span><span>✓ Final-year ready</span>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div class="sparkle">✦</div>
+        <h2>Your next project starts here.</h2>
+        <p>Build something that matches your skills—not a random project from a list.</p>
+      </div>
     </section>
 
-    <section id="results" class="results" aria-live="polite"></section>
+    <section id="generator" class="generator container">
+      <div class="section-heading">
+        <p class="eyebrow">PROJECT GENERATOR</p>
+        <h2>What are you interested in?</h2>
+        <p>Give us a little context and let AI do the brainstorming.</p>
+      </div>
+
+      <div class="form-grid card">
+        <div class="field full">
+          <label for="skills">Your skills</label>
+          <input id="skills" type="text" placeholder="Python, Java, Machine Learning, React..." autocomplete="off">
+          <small>Separate multiple skills with commas.</small>
+        </div>
+        <div class="field">
+          <label for="interests">Interests / domain</label>
+          <input id="interests" type="text" placeholder="AI, healthcare, education..." autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="difficulty">Difficulty</label>
+          <select id="difficulty">
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate" selected>Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="duration">Expected duration</label>
+          <select id="duration">
+            <option value="1-2 months">1–2 months</option>
+            <option value="3-4 months" selected>3–4 months</option>
+            <option value="5-6 months">5–6 months</option>
+          </select>
+        </div>
+        <button id="generateBtn" class="generate-btn" type="button"><span>✦</span> Generate My Ideas</button>
+      </div>
+    </section>
+
+    <section class="results-section container">
+      <div id="results" class="results" aria-live="polite"></div>
+    </section>
   </main>
+
+  <footer class="footer"><div class="container">ProjectMind AI · Built for final-year students</div></footer>
   <script src="script.js"></script>
 </body>
 </html>
