@@ -1,20 +1,58 @@
 import json
 import os
+import sqlite3
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, session
 from flask_cors import CORS
+from werkzeug.security import check_password_hash, generate_password_hash
 from openai import OpenAI
 
 from mentor import mentor_reply
 
 BASE_DIR = os.path.dirname(__file__)
 FRONTEND_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'frontend'))
+DB_PATH = os.path.join(BASE_DIR, 'projectmind.db')
 
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
-CORS(app)
+app.secret_key = os.getenv('SECRET_KEY', 'projectmind-development-secret-change-me')
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE', '0') == '1'
+CORS(app, supports_credentials=True)
 
 ALLOWED_DIFFICULTIES = {'Beginner', 'Intermediate', 'Advanced'}
 ALLOWED_DURATIONS = {'1-2 months', '3-4 months', '5-6 months'}
+
+
+def init_db():
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute('''CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            skills TEXT DEFAULT '',
+            interests TEXT DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )''')
+        conn.commit()
+
+
+def current_user():
+    user_id = session.get('user_id')
+    if not user_id:
+        return None
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute('SELECT id, name, email, skills, interests FROM users WHERE id = ?', (user_id,)).fetchone()
+    return dict(row) if row else None
+
+
+def login_required():
+    user = current_user()
+    if not user:
+        return None, (jsonify({'error': 'Please log in to continue.'}), 401)
+    return user, None
 
 
 def fallback_projects(skills, interests, difficulty, duration):
@@ -64,14 +102,68 @@ def health():
     return jsonify({'status': 'ok', 'ai_enabled': bool(os.getenv('OPENAI_API_KEY'))})
 
 
+@app.post('/api/register')
+def register():
+    data = request.get_json(silent=True) or {}
+    name = str(data.get('name', '')).strip()
+    email = str(data.get('email', '')).strip().lower()
+    password = str(data.get('password', ''))
+    if len(name) < 2 or len(name) > 80:
+        return jsonify({'error': 'Enter a valid name.'}), 400
+    if '@' not in email or len(email) > 160:
+        return jsonify({'error': 'Enter a valid email address.'}), 400
+    if len(password) < 6 or len(password) > 128:
+        return jsonify({'error': 'Password must be 6–128 characters.'}), 400
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.execute('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)', (name, email, generate_password_hash(password)))
+            user_id = cursor.lastrowid
+            conn.commit()
+    except sqlite3.IntegrityError:
+        return jsonify({'error': 'An account with this email already exists.'}), 409
+    session.clear()
+    session['user_id'] = user_id
+    return jsonify({'user': {'id': user_id, 'name': name, 'email': email}}), 201
+
+
+@app.post('/api/login')
+def login():
+    data = request.get_json(silent=True) or {}
+    email = str(data.get('email', '')).strip().lower()
+    password = str(data.get('password', ''))
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute('SELECT id, name, email, password_hash FROM users WHERE email = ?', (email,)).fetchone()
+    if not row or not check_password_hash(row['password_hash'], password):
+        return jsonify({'error': 'Incorrect email or password.'}), 401
+    session.clear()
+    session['user_id'] = row['id']
+    return jsonify({'user': {'id': row['id'], 'name': row['name'], 'email': row['email']}})
+
+
+@app.post('/api/logout')
+def logout():
+    session.clear()
+    return jsonify({'ok': True})
+
+
+@app.get('/api/me')
+def me():
+    user = current_user()
+    return jsonify({'authenticated': bool(user), 'user': user})
+
+
 @app.post('/api/mentor')
 def mentor():
+    user, error = login_required()
+    if error:
+        return error
     data = request.get_json(silent=True) or {}
     message = str(data.get('message', '')).strip()
     if not message or len(message) > 2000:
         return jsonify({'error': 'Enter a message up to 2000 characters.'}), 400
     try:
-        reply = mentor_reply(message, {'name': 'Student', 'email': '', 'skills': '', 'interests': ''}, [])
+        reply = mentor_reply(message, user, [])
         return jsonify({'reply': reply})
     except Exception:
         app.logger.exception('Mentor generation failed')
@@ -80,6 +172,9 @@ def mentor():
 
 @app.post('/api/generate')
 def generate():
+    user, error = login_required()
+    if error:
+        return error
     data = request.get_json(silent=True) or {}
     skills = str(data.get('skills', '')).strip()
     interests = str(data.get('interests', '')).strip()
@@ -97,6 +192,8 @@ def generate():
         app.logger.exception('AI generation failed')
         return jsonify({'error': 'AI generation failed. Check your API key, model, and backend logs.'}), 500
 
+
+init_db()
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', '5000'))
