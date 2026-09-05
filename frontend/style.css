@@ -13,15 +13,31 @@ body { margin: 0; font-family: Inter, Arial, sans-serif; background: #f7f8fc; co
 .nav-button span { display: inline-block; min-width: 20px; margin-left: 4px; padding: 2px 6px; border-radius: 999px; background: #eeeafd; color: #6c5ce7; }
 .nav-button:hover, .secondary-btn:hover, .save-btn:hover { border-color: #a99cff; }
 .hero { min-height: 520px; display: grid; grid-template-columns: 1.2fr .8fr; gap: 70px; align-items: center; padding: 65px 0 80px; }
+.hero-copy { min-width: 0; }
 .eyebrow { color: #6c5ce7; font-size: 12px; font-weight: 800; letter-spacing: 1.8px; margin: 0 0 15px; }
 h1 { font-size: clamp(42px, 6vw, 68px); line-height: 1.03; letter-spacing: -3px; margin: 0 0 22px; }
 h1 span { color: #6c5ce7; }
 .hero-text, .section-heading p { color: #657083; line-height: 1.75; max-width: 650px; }
 .hero-points { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 26px; font-size: 13px; font-weight: 600; color: #495467; }
+.hero-actions { display: flex; align-items: center; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+.hero-cta { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; width: auto; padding: 13px 18px; }
+.hero-cta span { margin-left: 8px; }
+.secondary-btn { display: inline-flex; align-items: center; text-decoration: none; }
 .hero-card { background: #1c2030; color: white; border-radius: 28px; padding: 38px; min-height: 300px; display: flex; flex-direction: column; justify-content: flex-end; box-shadow: 0 24px 60px rgba(25,29,45,.18); }
 .hero-card .sparkle { font-size: 38px; color: #a99cff; margin-bottom: auto; }
 .hero-card h2 { font-size: 28px; margin: 0 0 12px; letter-spacing: -1px; }
 .hero-card p { color: #b8becd; line-height: 1.6; }
+.hero-mini-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 20px; }
+.hero-mini-stats div { padding: 12px 10px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; background: rgba(255,255,255,.05); }
+.hero-mini-stats strong, .hero-mini-stats span { display: block; }
+.hero-mini-stats strong { font-size: 20px; }
+.hero-mini-stats span { color: #aeb5c5; font-size: 11px; margin-top: 3px; }
+.steps-section { padding: 10px 0 70px; }
+.steps-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
+.step-card { background: white; border: 1px solid #e7e9f0; border-radius: 18px; padding: 24px; box-shadow: 0 10px 35px rgba(25,35,60,.04); }
+.step-card > span { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 11px; background: #eeeafd; color: #6c5ce7; font-size: 12px; font-weight: 800; }
+.step-card h3 { margin: 18px 0 8px; font-size: 17px; }
+.step-card p { color: #687285; line-height: 1.65; font-size: 13px; margin: 0; }
 .generator { padding: 35px 0 70px; }
 .section-heading { text-align: center; margin-bottom: 28px; }
 .section-heading h2 { font-size: 34px; letter-spacing: -1.5px; margin: 0 0 8px; }
@@ -35,6 +51,7 @@ input:focus, select:focus { border-color: #8d81ef; box-shadow: 0 0 0 3px rgba(10
 input:disabled { color: #8991a1; background: #f2f3f7; }
 small { display: block; color: #8991a1; margin-top: 7px; font-size: 12px; }
 .generate-btn { grid-column: 1 / -1; border: 0; border-radius: 12px; padding: 16px; background: #6c5ce7; color: white; font: inherit; font-weight: 700; cursor: pointer; }
+.generate-btn:hover { filter: brightness(.96); }
 .generate-btn:disabled { opacity: .65; cursor: wait; }
 .results-section { padding-bottom: 70px; }
 .results { display: grid; gap: 20px; }
@@ -84,5 +101,5 @@ small { display: block; color: #8991a1; margin-top: 7px; font-size: 12px; }
 .auth-message { min-height: 18px; margin-top: 12px; color: #b42318; font-size: 13px; }
 .error { color: #b42318; background: #fff5f4; border-color: #ffd5d0; }
 .footer { border-top: 1px solid #e7e9f0; padding: 26px 0; color: #8a91a0; font-size: 12px; }
-@media (max-width:850px) { .hero { grid-template-columns:1fr; gap:30px; padding-top:40px; } .saved-grid,.comparison-grid { grid-template-columns:1fr; } }
+@media (max-width:850px) { .hero { grid-template-columns:1fr; gap:30px; padding-top:40px; } .saved-grid,.comparison-grid,.steps-grid { grid-template-columns:1fr; } }
 @media (max-width:760px) { .nav-actions { gap:6px; } .nav-link { display:none; } h1 { letter-spacing:-2px; } .hero-card { min-height:240px; } .form-grid,.profile-form { grid-template-columns:1fr; } .field.full,.generate-btn { grid-column:auto; } .project-top,.comparison-head { flex-direction:column; } .save-btn { margin-top:0; } .mentor-form { grid-template-columns:1fr; } .mentor-form .generate-btn { width:100%; } }
