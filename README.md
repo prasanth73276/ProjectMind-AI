@@ -9,6 +9,7 @@ ProjectMind AI is an AI-powered platform for final-year students. It generates p
 - Create a development roadmap
 - Suggest advanced improvements
 - Includes a fallback generator when no OpenAI key is configured
+- Health endpoint to verify API status
 
 ## Project Structure
 
@@ -48,12 +49,21 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Optional AI configuration:
+### Enable AI
 
-1. Copy `backend/.env.example` to `backend/.env`.
-2. Set `OPENAI_API_KEY` to your API key.
-3. Set `OPENAI_MODEL` to a model available in your API account.
-4. Export the variables in your terminal before starting Flask.
+Copy `backend/.env.example` to `backend/.env`, then set your OpenAI API key and model. Load those environment variables in your terminal before starting Flask.
+
+Windows PowerShell:
+```powershell
+$env:OPENAI_API_KEY="your_api_key"
+$env:OPENAI_MODEL="gpt-5.6-luna"
+```
+
+macOS/Linux:
+```bash
+export OPENAI_API_KEY="your_api_key"
+export OPENAI_MODEL="gpt-5.6-luna"
+```
 
 Start the API:
 ```bash
@@ -62,9 +72,14 @@ python app.py
 
 The API runs at `http://localhost:5000`.
 
+Check the API:
+```text
+http://localhost:5000/api/health
+```
+
 ## Run the Frontend
 
-From the `frontend` folder, use a simple local server, for example:
+From the `frontend` folder:
 
 ```bash
 python -m http.server 5500
@@ -76,4 +91,4 @@ Then open `http://localhost:5500` in your browser.
 
 ## OpenAI Integration
 
-The backend uses the OpenAI Responses API for AI-generated project recommendations when `OPENAI_API_KEY` is configured. See the official OpenAI API documentation for current model and API details.
+The backend uses the OpenAI Responses API for AI-generated project recommendations when `OPENAI_API_KEY` is configured. The model is configurable through `OPENAI_MODEL`; keep this value aligned with a model available to your API account. See the official OpenAI documentation for current model/API details.
