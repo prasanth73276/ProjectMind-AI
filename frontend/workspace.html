@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ProjectMind AI — Project Workspace</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.workspace{padding:55px 0 90px}.workspace-card{max-width:900px;margin:auto}.workspace-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.workspace-output{margin-top:22px;white-space:pre-wrap;line-height:1.75;color:#4d5668}.workspace-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.status{font-size:13px;color:#687285;margin-top:12px}.back{display:inline-block;margin-bottom:28px;color:#6c5ce7;text-decoration:none;font-weight:700;font-size:13px}@media(max-width:760px){.workspace-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="nav container"><div class="brand"><span class="brand-mark">✦</span> ProjectMind <span>AI</span></div><div class="nav-actions"><a class="nav-link" href="index.html">← Main App</a></div></nav>
+<main class="workspace container">
+<a class="back" href="index.html">← Back to ProjectMind AI</a>
+<div class="section-heading"><p class="eyebrow">PROJECT WORKSPACE</p><h1 style="font-size:clamp(38px,6vw,60px);letter-spacing:-2px">Build your project plan.</h1><p>Turn a saved idea into a complete final-year project blueprint with architecture, modules, database design, roadmap, datasets, documentation, and viva preparation.</p></div>
+<div class="card workspace-card">
+<div class="workspace-grid"><div class="field"><label for="project">Choose a saved project</label><select id="project"><option>Loading saved projects...</option></select></div><div class="field"><label for="duration">Timeline</label><select id="duration"><option>1-2 months</option><option selected>3-4 months</option><option>5-6 months</option></select></div></div>
+<div class="workspace-actions"><button id="build" class="generate-btn" type="button">✦ Create Project Workspace</button><a class="secondary-btn" href="index.html#mentor">Ask AI Mentor</a></div><div id="status" class="status"></div>
+</div>
+<div id="output" class="card workspace-card workspace-output" hidden></div>
+</main>
+<footer class="footer"><div class="container">ProjectMind AI · Project Workspace</div></footer>
+<script>
+const API='http://localhost:5000/api';const select=document.getElementById('project'),build=document.getElementById('build'),output=document.getElementById('output'),status=document.getElementById('status');let projects=[];
+async function api(path,options={}){const r=await fetch(API+path,{credentials:'include',headers:{'Content-Type':'application/json'},...options});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'Request failed');return d}
+function esc(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\\':'&#39;'}[c]));}
+async function init(){try{const me=await api('/auth/me');if(!me.user){status.textContent='Please log in on the main app first.';select.innerHTML='<option>Login required</option>';build.disabled=true;return}const d=await api('/saved');projects=d.projects||[];select.innerHTML=projects.length?projects.map((p,i)=>`<option value="${i}">${esc(p.title)}</option>`).join(''):'<option>No saved projects</option>';if(!projects.length)build.disabled=true}catch(e){status.textContent=e.message}}
+build.onclick=async()=>{const p=projects[Number(select.value)];if(!p)return;build.disabled=true;status.textContent='AI is creating your workspace...';output.hidden=false;output.textContent='Building your project blueprint…';const prompt=`Create a complete final-year project workspace for this saved project. Project title: ${p.title}. Description: ${p.description}. Technologies: ${(p.technologies||[]).join(', ')}. Features: ${(p.features||[]).join(', ')}. Timeline: ${document.getElementById('duration').value}. Return a practical blueprint with exactly these sections: 1. Project Objective 2. Problem Statement 3. System Architecture 4. Modules 5. Database Schema 6. API Plan 7. Dataset/Data Sources 8. Week-by-Week Roadmap 9. Testing Plan 10. Documentation Chapters 11. Viva Questions 12. Future Enhancements. Use concise bullet points and make it realistic for a student.`;try{const d=await api('/mentor',{method:'POST',body:JSON.stringify({message:prompt})});output.textContent=d.reply;status.textContent='Workspace created successfully.'}catch(e){output.textContent=e.message;status.textContent='Could not create workspace.'}finally{build.disabled=false}};init();
+</script>
+</body></html>
